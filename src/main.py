@@ -1,5 +1,6 @@
 import sys
 import pygame
+import matplotlib.pyplot as plt
 
 from .state import State
 from .generate import MazeGenerator
@@ -303,6 +304,7 @@ clear_btn.rect.right = WIDTH - 20
 
 def main() -> None:
     """Start here"""
+    # Create a label at the top to prompt the user to choose an algorithm
     state.label = Label(
         "Choose an algorithm", "center", 0,
         background_color=pygame.Color(*WHITE),
@@ -312,6 +314,7 @@ def main() -> None:
     )
     state.label.rect.bottom = HEADER_HEIGHT - 10
 
+    # Create a label for the speed, displayed near the speed button
     state.speed_label = Label(
         surface=WINDOW,
         text="Fast",
@@ -323,36 +326,39 @@ def main() -> None:
     )
     state.speed_label.rect.centerx = speed_btn.rect.centerx
 
-    # Game loop
+    # Game loop variables
     mouse_is_down = False
     state.done_visualising = False
     state.need_update = True
 
     draw_weighted_nodes = False
-
     dragging = False
     cell_under_mouse = (-1, -1)
     cell_value = ""
 
+    # Start of the game loop
     while True:
-        # Handle events
+        # Handle events like quitting, mouse clicks, or mouse releases
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
 
             if event.type == pygame.MOUSEBUTTONDOWN:
+                # Ignore event if overlay is active
                 if state.overlay:
                     break
 
                 state.need_update = True
                 pos = pygame.mouse.get_pos()
 
+                # Break if mouse is out of maze bounds
                 if not maze.mouse_within_bounds(pos):
                     break
 
                 mouse_is_down = True
 
+                # Get row and column of the cell clicked
                 row, col = maze.get_cell_pos(pos)
                 if (value := maze.get_cell_value((row, col))) in ("A", "B"):
                     dragging = True
@@ -360,6 +366,7 @@ def main() -> None:
                     cell_value = value
 
             if event.type == pygame.MOUSEBUTTONUP:
+                # Release mouse and stop dragging or animations
                 mouse_is_down = False
                 animator.animating = False
                 draw_weighted_nodes = False
@@ -375,6 +382,7 @@ def main() -> None:
                     if maze.get_cell_value((row, col)) in ("A", "B") or state.done_visualising:
                         break
 
+                    # Move the start or goal node to the new cell
                     maze.set_cell((row, col), cell_value)
                     maze.set_cell(cell_under_mouse, "1")
 
@@ -383,11 +391,10 @@ def main() -> None:
         if state.need_update:
             draw()
 
-        # Get pressed keys for weighted nodes
+        # Handle pressed keys for drawing weighted nodes
         draw_weighted_nodes, key = get_pressed()
 
-        # Draw walls | weighted nodes
-        # This should not run when animating solution
+        # If the mouse is held down and not dragging, draw walls or weighted nodes
         if mouse_is_down and not dragging:
             pos = pygame.mouse.get_pos()
 
@@ -399,9 +406,9 @@ def main() -> None:
                         rect = pygame.Rect(0, 0, MIN_SIZE, MIN_SIZE)
                         x, y = maze.coords[row][col]
 
+                        # Draw weighted nodes if key is pressed
                         if draw_weighted_nodes and key:
-
-                            animator.add_nodes_to_animate([
+                            animator.add_nodes_to_animate([  # Add animation for weighted node
                                 AnimatingNode(
                                     rect=rect,
                                     center=(x + CELL_SIZE // 2,
@@ -415,7 +422,7 @@ def main() -> None:
                             ])
 
                         else:
-                            animator.add_nodes_to_animate([
+                            animator.add_nodes_to_animate([  # Add animation for normal wall node
                                 AnimatingNode(
                                     rect=rect,
                                     center=(x + CELL_SIZE // 2,
@@ -425,28 +432,27 @@ def main() -> None:
                                     color=DARK
                                 )
                             ])
-
                     elif maze.get_cell_value((row, col)) not in ("A", "B"):
-                        maze.set_cell((row, col), "1")
+                        maze.set_cell((row, col), "1")  # Set wall in the selected cell
 
                     cell_under_mouse = (row, col)
 
-        # Animate nodes
+        # Animate nodes if any are scheduled for animation
         if animator.nodes_to_animate and state.need_update:
             animator.animating = True
             animator.animate_nodes()
         else:
             animator.animating = False
 
-        # Handle moving start and target nodes
+        # If dragging, update the position of the start or goal node
         if dragging and not state.done_visualising and not animator.animating:
             x, y = pygame.mouse.get_pos()
             if cell_value == "A":
-                WINDOW.blit(START, (x - 10, y - 10))
+                WINDOW.blit(START, (x - 10, y - 10))  # Display the start node
             else:
-                WINDOW.blit(GOAL, (x - 10, y - 10))
+                WINDOW.blit(GOAL, (x - 10, y - 10))  # Display the goal node
 
-        # Instantly find path if dragging post visualisation
+        # After visualization, allow dragging the start or goal nodes and instantly solve the maze
         if dragging and state.done_visualising and not animator.animating:
             x, y = pygame.mouse.get_pos()
 
@@ -458,11 +464,12 @@ def main() -> None:
                     maze.set_cell((row, col), cell_value)
                     maze.set_cell(cell_under_mouse, "1")
 
+                    # Instantly solve the maze after moving the start or goal node
                     text = state.label.text.split(" took")[0]
                     instant_algorithm(maze, text)
                     cell_under_mouse = (row, col)
 
-        # Update
+        # Update the display and maintain the frame rate
         pygame.display.update()
         CLOCK.tick(FPS)
 
@@ -476,6 +483,7 @@ def instant_algorithm(maze: Maze, algo_name: str):
     """
     maze.clear_visited()
 
+    # Solve the maze with the chosen algorithm
     solution = maze.solve(algo_name=algo_name)
 
     path = solution.path
@@ -486,14 +494,14 @@ def instant_algorithm(maze: Maze, algo_name: str):
         if (i, j) in (maze.start, maze.goal):
             continue
 
-        maze.set_cell((i, j), "V")
+        maze.set_cell((i, j), "V")  # Set visited cells
 
     # Mark optimal path nodes as yellow
     for i, j in path:
         if (i, j) in (maze.start, maze.goal):
             continue
 
-        maze.set_cell((i, j), "*")
+        maze.set_cell((i, j), "*")  # Set optimal path cells
 
 
 def get_pressed() -> tuple[bool, int | None]:
@@ -811,22 +819,90 @@ def run_all(algo_idx: int, maze_idx: int = -1) -> None:
     state.label.rect.bottom = HEADER_HEIGHT - 10
 
 
+import matplotlib.pyplot as plt
+
+
+def plot_comparison_results(results):
+    """Plot comparison results using Matplotlib.
+
+    Args:
+        results (list[tuple[str, dict]]): Result data as (algorithm, metrics) tuples.
+    """
+    # Extract the algorithm names, steps explored, path lengths, and times from the results.
+    algorithms = [result[0] for result in results]
+    steps_explored = [result[1]['explored_length'] for result in results]
+    path_lengths = [result[1]['path_length'] for result in results]
+    times = [result[1]['time'] for result in results]
+
+    # Create a 2x2 grid of subplots with a specified figure size.
+    fig, axs = plt.subplots(2, 2, figsize=(12, 8))
+    # Set the main title for the entire figure.
+    fig.suptitle('Algorithm Performance Comparison', fontsize=16)
+
+    # Helper function to add values on top of the bars in the bar chart.
+    def add_values_on_bars(ax, values):
+        # Iterate through each bar and add a text label with the corresponding value.
+        for bar, value in zip(ax.patches, values):
+            ax.text(
+                bar.get_x() + bar.get_width() / 2,  # Position the label at the center of the bar
+                bar.get_height() + (0.02 * max(values)),  # Place the label slightly above the bar
+                f'{value:.2f}' if isinstance(value, float) else f'{value}',  # Format the value
+                ha='center', va='bottom', fontsize=9  # Center-align the text
+            )
+
+    # Plot the "Steps Explored" data on the first subplot (top-left).
+    axs[0, 0].bar(algorithms, steps_explored, color='skyblue')
+    axs[0, 0].set_title('Steps Explored')  # Set the title for this subplot
+    axs[0, 0].set_ylabel('Number of Steps')  # Label the y-axis
+    axs[0, 0].tick_params(axis='x', rotation=45)  # Rotate the x-axis labels for readability
+    axs[0, 0].grid(True, axis='y', linestyle='--', alpha=0.7)  # Add gridlines
+    add_values_on_bars(axs[0, 0], steps_explored)  # Add the values on top of the bars
+
+    # Plot the "Path Length" data on the second subplot (top-right).
+    axs[0, 1].bar(algorithms, path_lengths, color='orange')
+    axs[0, 1].set_title('Path Length')
+    axs[0, 1].set_ylabel('Number of Nodes')
+    axs[0, 1].tick_params(axis='x', rotation=45)
+    axs[0, 1].grid(True, axis='y', linestyle='--', alpha=0.7)
+    add_values_on_bars(axs[0, 1], path_lengths)
+
+    # Plot the "Time Taken" data on the third subplot (bottom-left).
+    axs[1, 0].bar(algorithms, times, color='red')
+    axs[1, 0].set_title('Time Taken')
+    axs[1, 0].set_ylabel('Time (ms)')
+    axs[1, 0].tick_params(axis='x', rotation=45)
+    axs[1, 0].grid(True, axis='y', linestyle='--', alpha=0.7)
+    add_values_on_bars(axs[1, 0], times)
+
+    # Hide the fourth subplot (bottom-right), as it's unused.
+    axs[1, 1].axis('off')
+
+    # Adjust the layout to avoid overlapping text and ensure proper spacing.
+    plt.tight_layout(rect=[0, 0, 1, 0.96])
+
+    # Display the plot.
+    plt.show()
+
+
 def show_results(results: list[tuple[str, dict[str, float]]]) -> None:
-    """Display results
+    """Display results and visualize them.
 
     Args:
         results (list[tuple[str, dict[str, float]]]): Result data
     """
+    # Prepare the table data with headers and result rows.
     children: list[list[TableCell]] = []
+
+    # Add header row to the table with labels for each column.
     children.append([
         TableCell(
             child=Label(
-                    "Algorithm", 0, 0,
-                    background_color=pygame.Color(*DARK_BLUE),
-                    foreground_color=pygame.Color(*WHITE),
-                    padding=6, font_size=20, outline=False,
-                    surface=WINDOW,
-                    ),
+                "Algorithm", 0, 0,
+                background_color=pygame.Color(*DARK_BLUE),
+                foreground_color=pygame.Color(*WHITE),
+                padding=6, font_size=20, outline=False,
+                surface=WINDOW,
+            ),
             color=DARK_BLUE,
         ),
         TableCell(
@@ -851,16 +927,6 @@ def show_results(results: list[tuple[str, dict[str, float]]]) -> None:
         ),
         TableCell(
             child=Label(
-                "Path Cost", 0, 0,
-                background_color=pygame.Color(*DARK_BLUE),
-                foreground_color=pygame.Color(*WHITE),
-                padding=6, font_size=20, outline=False,
-                surface=WINDOW,
-            ),
-            color=DARK_BLUE,
-        ),
-        TableCell(
-            child=Label(
                 "Time Taken", 0, 0,
                 background_color=pygame.Color(*DARK_BLUE),
                 foreground_color=pygame.Color(*WHITE),
@@ -871,21 +937,23 @@ def show_results(results: list[tuple[str, dict[str, float]]]) -> None:
         ),
     ])
 
+    # Define colors for each row, alternating between green and yellow for clarity.
     colors = [GREEN_2, GREEN_2, YELLOW, YELLOW]
-    colors.extend([GRAY] * (len(results) - 4))
+    colors.extend([GRAY] * (len(results) - 4))  # Ensure the table rows are filled
 
+    # Iterate over each result and add the data rows to the table.
     for i, result in enumerate(results):
         children.append([
             TableCell(
                 child=Label(
-                        f"{i + 1}. {result[0]}", 0, 0,
-                        background_color=pygame.Color(*colors[i]),
-                        foreground_color=pygame.Color(*DARK),
-                        padding=6, font_size=20, outline=False,
-                        surface=WINDOW,
-                        ),
+                    f"{i + 1}. {result[0]}", 0, 0,
+                    background_color=pygame.Color(*colors[i]),
+                    foreground_color=pygame.Color(*DARK),
+                    padding=6, font_size=20, outline=False,
+                    surface=WINDOW,
+                ),
                 color=colors[i],
-                align=Alignment.LEFT
+                align=Alignment.LEFT,
             ),
             TableCell(
                 child=Label(
@@ -896,7 +964,7 @@ def show_results(results: list[tuple[str, dict[str, float]]]) -> None:
                     surface=WINDOW,
                 ),
                 color=colors[i],
-                align=Alignment.RIGHT
+                align=Alignment.RIGHT,
             ),
             TableCell(
                 child=Label(
@@ -907,18 +975,7 @@ def show_results(results: list[tuple[str, dict[str, float]]]) -> None:
                     surface=WINDOW,
                 ),
                 color=colors[i],
-                align=Alignment.RIGHT
-            ),
-            TableCell(
-                child=Label(
-                    f"{result[1]['path_cost']}", 0, 0,
-                    background_color=pygame.Color(*colors[i]),
-                    foreground_color=pygame.Color(*DARK),
-                    padding=6, font_size=20, outline=False,
-                    surface=WINDOW,
-                ),
-                color=colors[i],
-                align=Alignment.RIGHT
+                align=Alignment.RIGHT,
             ),
             TableCell(
                 child=Label(
@@ -929,10 +986,11 @@ def show_results(results: list[tuple[str, dict[str, float]]]) -> None:
                     surface=WINDOW,
                 ),
                 color=colors[i],
-                align=Alignment.RIGHT
+                align=Alignment.RIGHT,
             ),
         ])
 
+    # Create a popup window to display the table of results.
     popup = Popup(
         WINDOW,
         0,
@@ -954,14 +1012,18 @@ def show_results(results: list[tuple[str, dict[str, float]]]) -> None:
                 x=0,
                 y=0,
                 rows=6,
-                columns=5,
+                columns=4,
                 padding=20,
                 color=DARK,
                 children=children,
-            )
+            ),
         ],
     )
 
+    # Center the popup on the screen and set the surface.
     popup.update_center(WINDOW.get_rect().center)
     popup.set_surface(WINDOW)
     state.results_popup = popup
+
+    # Dynamically call the Matplotlib function to plot the comparison results.
+    plot_comparison_results(results)
