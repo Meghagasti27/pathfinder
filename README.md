@@ -7,36 +7,36 @@ https://user-images.githubusercontent.com/67793598/218127466-38274684-5eb6-44e9-
 <table border='0px'>
     <tr>
         <td>
-            <img src='screenshots/AStar.png?raw=true' 
+            <img src='screenshots/AStar.png?raw=true'
                  alt="A* Search"
                  width='360'>
         </td>
         <td>
-            <img src='screenshots/Dijkstras.png?raw=true' 
+            <img src='screenshots/Dijkstras.png?raw=true'
                  alt="Dijkstra's Search"
                  width='360'>
         </td>
     </tr>
     <tr>
         <td>
-            <img src='screenshots/GreedyBFS.png?raw=true' 
+            <img src='screenshots/GreedyBFS.png?raw=true'
                  alt="Greedy Best-First Search"
                  width='360'>
         </td>
         <td>
-            <img src='screenshots/BFS.png?raw=true' 
+            <img src='screenshots/BFS.png?raw=true'
                  alt="Breadth-First Search"
                  width='360'>
         </td>
     </tr>
     <tr>
         <td>
-            <img src='screenshots/DFS.png?raw=true' 
+            <img src='screenshots/DFS.png?raw=true'
                  alt="Depth-First Search"
                  width='360'>
         </td>
         <td>
-            <img src='screenshots/Results.png?raw=true' 
+            <img src='screenshots/Results.png?raw=true'
                  alt="Results"
                  width='360'>
         </td>
@@ -46,13 +46,15 @@ https://user-images.githubusercontent.com/67793598/218127466-38274684-5eb6-44e9-
 ## Features
 * Visualizes popular pathfinding algorithms such as Dijkstra's and A*.
 * Visualizes popular maze generation algorithms like Recursive division and Prim's algorithm.
-* Feature to run all algorithms b2b to compare their performance.
+* Feature to run all algorithms back-to-back to compare their performance.
 * Step-by-step animation of the search process, allowing you to see how the algorithms work.
 * Option to place obstacles on the grid to create custom maps.
 * Selectable starting and ending points on the grid.
-* Configurable speed of the animation. 
-* Configurable grid size
+* Configurable speed of the animation.
+* Configurable grid size.
 * Clean and intuitive user interface.
+* Graph visualization using Matplotlib to compare algorithm performance.
+* Table-based comparison of algorithm steps and efficiency.
 
 ## Supported Algorithms
 The following pathfinding algorithms are currently supported in this visualizer:
@@ -65,21 +67,27 @@ The following pathfinding algorithms are currently supported in this visualizer:
 
 Each algorithm uses a different approach to finding the shortest path between two points on a graph. Choose the one that best fits your use case and watch it in action.
 
+## Modifications and Enhancements
+This project has been enhanced with the following improvements:
+* **Matplotlib Integration**: Added graphical representation of algorithm performance using Matplotlib.
+* **Algorithm Comparison Table**: Created a structured table to compare the number of steps and efficiency of each algorithm.
+* **Significant Code Contributions**: Improved existing implementations for better performance and maintainability.
+
 ## Requirements
 * Python 3.10 and above: You can download the latest version of Python from the official website (https://www.python.org/downloads/).
 * Pygame: You can install Pygame by running 'pip install pygame' in your terminal.
+* Matplotlib: You can install Matplotlib by running 'pip install matplotlib'.
 
 ## Usage
-- Download the project repository to your local machine. 
+- Download the project repository to your local machine.
 - Navigate to the project directory.
-- Run `python3 run.pyw` if on Linux or Mac
-- Run `python run.pyw` if on Windows
+- Run `python3 run.pyw` if on Linux or Mac.
+- Run `python run.pyw` if on Windows.
 
 ## Command Line Arguments
 1. `--cell-size`
-Usage: `python run.pyw --cell-size:<int>`
+   Usage: `python run.pyw --cell-size:<int>`
 
 ## Contributing
 This project is open to contributions, bug reports, and suggestions. If you've found a bug or have a suggestion, please open an issue.
-
 
