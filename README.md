@@ -82,7 +82,4 @@ Usage: `python run.pyw --cell-size:<int>`
 ## Contributing
 This project is open to contributions, bug reports, and suggestions. If you've found a bug or have a suggestion, please open an issue.
 
-# License
-This project is licensed under the MIT License.
 
-Enjoy visualizing pathfinding algorithms!
