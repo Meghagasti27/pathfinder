@@ -2,7 +2,7 @@ import sys
 import pygame
 import matplotlib.pyplot as plt
 
-from .state import State
+from state import State
 from .generate import MazeGenerator
 from .animations import Animation, Animator, AnimatingNode
 from .maze import GOAL, START, Maze, WEIGHT
